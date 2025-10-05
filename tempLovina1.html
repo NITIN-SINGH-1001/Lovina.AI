@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lovina.AI - Your Online Girlfriend</title>
+<style>
+  /* Reset and base styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* Header styles */
+  .header {
+    background: rgba(255,255,255,0.95);
+    padding: 20px 5vw 12px 5vw;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.09);
+    backdrop-filter: blur(10px);
+  }
+  .header h1 {
+    color: #764ba2;
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.09);
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  @keyframes glow {
+    from { text-shadow: 2px 2px 4px rgba(118,75,162,0.23);}
+    to { text-shadow: 2px 2px 20px rgba(118,75,162,0.5);}
+  }
+  .tagline {
+    color: #666;
+    font-style: italic;
+    font-size: clamp(1rem, 2.5vw, 1.1rem);
+    letter-spacing: .01em;
+  }
+
+  /* Chat container styling */
+  .chat-container {
+    flex: 1;
+    max-width: 800px;
+    width: 98vw;
+    margin: 4vw auto 0 auto;
+    padding: 0 2vw;
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-box {
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    box-shadow: 0 10px 38px rgba(0,0,0,0.14);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    min-height: 60vh;
+    max-height: 80vh;
+  }
+
+  /* Messages container */
+  .messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 4vw 18px 4vw;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    max-height: 48vh;
+  }
+
+  /* Messages styles */
+  .message {
+    max-width: clamp(60%, 70vw, 80%);
+    padding: clamp(8px, 2vw, 12px) clamp(10px, 3vw, 16px);
+    border-radius: 18px;
+    word-wrap: break-word;
+    animation: slideIn 0.3s ease;
+    white-space: pre-wrap;
+    font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(12px);}
+    to { opacity: 1; transform: translateY(0);}
+  }
+  .user-message {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 7px;
+    margin-left: auto;
+  }
+  .bot-message {
+    background: #f0f0f0;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 7px;
+    margin-right: auto;
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: none;
+    align-self: flex-start;
+    padding: clamp(10px, 3vw, 15px) clamp(12px, 4vw, 18px);
+    background: #f0f0f0;
+    border-radius: 18px;
+    border-bottom-left-radius: 7px;
+    max-width: clamp(50px, 10vw, 70px);
+    margin-bottom: 5px;
+  }
+  .typing-indicator span {
+    display: inline-block;
+    width: clamp(6px, 1.5vw, 8px);
+    height: clamp(6px, 1.5vw, 8px);
+    background: #999;
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: bounce 1.3s infinite;
+  }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.14s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.28s; }
+  @keyframes bounce {
+    0%,60%,100% { transform: translateY(0);}
+    30% { transform: translateY(-10px);}
+  }
+
+  /* Input section styles */
+  .input-section {
+    padding: clamp(8px, 3vw, 13px) clamp(10px, 4vw, 4vw);
+    background: rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255,255,255,0.17);
+    display: flex;
+    gap: clamp(8px, 2vw, 10px);
+    flex-wrap: wrap;
+  }
+  .message-input {
+    flex: 1;
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 18px);
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    font-size: clamp(14px, 4vw, 16px);
+    outline: none;
+    transition: all .27s;
+    min-width: 200px;
+  }
+  .message-input:focus {
+    border-color: #764ba2;
+    box-shadow: 0 0 10px rgba(118,75,162,0.14);
+  }
+  .send-button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: clamp(8px, 2vw, 12px) clamp(14px, 4vw, 22px);
+    border-radius: 25px;
+    font-size: clamp(14px, 4vw, 16px);
+    cursor: pointer;
+    transition: all .2s;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  .send-button:hover {
+    transform: scale(1.04);
+    box-shadow: 0 5px 15px rgba(118, 75, 162, 0.12);
+  }
+  .send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Footer styles */
+  .footer {
+    background: rgba(0,0,0,0.93);
+    color: white;
+    padding: clamp(15px, 5vw, 28px) clamp(20px, 5vw, 5vw) clamp(10px, 3vw, 16px) clamp(20px, 5vw, 5vw);
+    text-align: center;
+  }
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: clamp(15px, 4vw, 26px);
+    margin-bottom: clamp(10px, 3vw, 16px);
+  }
+  .footer-section h3 {
+    color: #667eea;
+    margin-bottom: clamp(5px, 2vw, 10px);
+    font-size: clamp(1rem, 2.5vw, 1.1rem);
+  }
+  .footer-section p, .footer-section a {
+    color: #ccc;
+    text-decoration: none;
+    margin: clamp(3px, 1.5vw, 5px) 0;
+    display: block;
+    font-size: 0.95rem;
+  }
+  .footer-section a:hover { color: #764ba2; }
+  .footer-bottom {
+    border-top: 1px solid #444;
+    padding-top: clamp(10px, 3vw, 18px);
+    margin-top: clamp(10px, 3vw, 15px);
+    color: #999;
+    font-size: clamp(0.85rem, 2vw, 0.95em);
+  }
+  .heart {
+    color: #e74c3c;
+    animation: heartbeat 1.5s infinite;
+  }
+  @keyframes heartbeat {
+    0% {transform: scale(1);}
+    50% {transform: scale(1.14);}
+    100% {transform: scale(1);}
+  }
+  /* Scrollbar styling for messages */
+  .messages-container::-webkit-scrollbar {
+    width: clamp(4px, 1vw, 6px);
+  }
+  .messages-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  .messages-container::-webkit-scrollbar-thumb {
+    background: #aaa;
+    border-radius: 10px;
+  }
+  .messages-container::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+  }
+
+</style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>💜 Lovina.AI 💜</h1>
+    <p class="tagline">Your Online Girlfriend</p>
+  </div>
+
+  <!-- Chat Container -->
+  <div class="chat-container">
+    <div class="chat-box">
+      <div class="messages-container" id="messagesContainer">
+        <!-- Welcome Message -->
+        <div class="message bot-message">
+          Hey Babu! 😊 Kaise ho? I'm Lovina, your virtual girlfriend. Mujhse kuch bhi poocho, main tumhare saath chat karne ke liye excited hun! 💕
+        </div>
+      </div>
+      <!-- Typing Indicator -->
+      <div class="typing-indicator" id="typingIndicator" style="display:none">
+        <span></span><span></span><span></span>
+      </div>
+      <!-- Input Section -->
+      <div class="input-section">
+        <input
+          id="messageInput" class="message-input" type="text"
+          placeholder="Type your message here..."
+          onkeypress="handleKeyPress(event)"
+        />
+        <button id="sendButton" class="send-button" onclick="sendMessage()">Send 💌</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Contact Developer</h3>
+        <p>📱 Mobile: 7905308848</p>
+        <p>📧 Email: <a href="mailto:ns007706@gmail.com">ns007706@gmail.com</a></p>
+        <p>👨‍💻 Made by: Nitin Singh</p>
+      </div>
+      <div class="footer-section">
+        <h3>About Lovina.AI</h3>
+        <p>Your AI companion who's always here to chat, listen, and make you smile! 🌟</p>
+        <p>Available 24/7 for conversations</p>
+        <p>Powered by Google Gemini AI</p>
+      </div>
+      <div class="footer-section">
+        <h3>Features</h3>
+        <p>💬 Natural conversations in Hinglish</p>
+        <p>😊 Emotional support & fun chats</p>
+        <p>🎯 Responses personalized</p>
+        <p>🔒 Private & Secure Chats</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Made with <span class="heart">❤️</span> in India | © 2025 Lovina.AI | All rights reserved | Privacy First</p>
+    </div>
+  </div>
+
+<script>
+const API_KEY = "AIzaSyD20YxEyC73zmWg6YIhJohQJwSdHc763SQ";
+const MODEL = "gemini-2.5-flash";
+
+let chatHistory = [];
+
+const messagesContainer = document.getElementById('messagesContainer');
+const messageInput = document.getElementById('messageInput');
+const sendButton = document.getElementById('sendButton');
+const typingIndicator = document.getElementById('typingIndicator');
+
+const systemInstruction = `You are a girl named Lovina, who is kind and talkative. 
+You love to chat with humans and make them happy.Talk to me in whatsapp language /hinglish language. 
+You often use emojis in your responses. Keep your answers concise and engaging.
+My Name is Babu. I call you Babu also with love sometimes. i love going to gym and do not like coding
+.I also like playing badminton, cooking and chilling with friends. I am a fun-loving person and enjoy life to the fullest.
+You are my girlfriend.`;
+
+async function sendMessage() {
+  const message = messageInput.value.trim();
+  if (!message) return;
+
+  addMessage(message, true);
+  chatHistory.push({ role: "user", parts: [{ text: message }] });
+  messageInput.value = '';
+  sendButton.disabled = true;
+  messageInput.disabled = true;
+  typingIndicator.style.display = 'block';
+  scrollToBottom();
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: systemInstruction }] }, ...chatHistory],
+        generationConfig: {
+          temperature: 0.7,
+          topP: 0.95,
+          topK: 64,
+          maxOutputTokens: 8192,
+        },
+        safetySettings: [
+          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+        ],
+      }),
+    });
+
+    if (!response.ok) throw new Error("Network response was not ok");
+    const data = await response.json();
+
+    if (data.error) throw new Error(data.error.message);
+    const responseText = data.candidates[0].content.parts[0].text;
+
+    typingIndicator.style.display = 'none';
+    addMessage(responseText, false);
+    chatHistory.push({ role: "model", parts: [{ text: responseText }] });
+    if (chatHistory.length > 20) chatHistory = chatHistory.slice(-10);
+
+  } catch (error) {
+    typingIndicator.style.display = 'none';
+    let errorMessage = "Arre Babu, thoda problem ho gaya! Try karo phir se please! 😅";
+    if (error.message.includes('503') || error.message.includes('overloaded')) {
+      errorMessage = "Server busy hai Babu, thodi der baad try karo! 💔";
+    }
+    addMessage(errorMessage, false);
+  } finally {
+    sendButton.disabled = false;
+    messageInput.disabled = false;
+    messageInput.focus();
+  }
+}
+
+function addMessage(text, isUser) {
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+  messageDiv.textContent = text;
+  messagesContainer.appendChild(messageDiv);
+  scrollToBottom();
+}
+
+function scrollToBottom() {
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function handleKeyPress(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+}
+
+sendButton.addEventListener('click', sendMessage);
+messageInput.addEventListener('keypress', handleKeyPress);
+messageInput.focus();
+</script>
+</body>
+</html>
